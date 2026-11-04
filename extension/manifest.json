@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Selector de celdas y checkboxes",
+  "version": "2.0.0",
+  "description": "Ctrl + arrastrar selecciona y copia celdas de tablas. Shift + clic derecho + arrastrar marca checkboxes. Funciona en local.",
+  "icons": {
+    "32": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js", "checkboxes.js"],
+      "css": ["content.css"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_origin_as_fallback": true
+    }
+  ]
+}

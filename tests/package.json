@@ -1,0 +1,12 @@
+{
+  "name": "selector-celdas-tests",
+  "private": true,
+  "description": "Pruebas de la extensión Selector de celdas con Playwright y Chromium",
+  "scripts": {
+    "test": "playwright test",
+    "test:excel": "playwright test --config=playwright.excel.config.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0"
+  }
+}

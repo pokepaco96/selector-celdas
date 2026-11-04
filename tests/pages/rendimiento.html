@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Rendimiento</title>
+<style>
+  table { border-collapse: collapse; }
+  td { border: 1px solid #bbb; padding: 2px 6px; font: 12px monospace; }
+</style>
+</head>
+<body>
+<table id="grande"><tbody id="cuerpo"></tbody></table>
+<script>
+  const ROWS = 5000;
+  const COLS = 10;
+  const parts = [];
+  for (let r = 0; r < ROWS; r++) {
+    let row = '<tr>';
+    for (let c = 0; c < COLS; c++) row += `<td>F${r}C${c}</td>`;
+    parts.push(row + '</tr>');
+  }
+  document.getElementById('cuerpo').innerHTML = parts.join('');
+  window.longTasks = [];
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) window.longTasks.push(Math.round(entry.duration));
+  }).observe({ entryTypes: ['longtask'] });
+</script>
+</body>
+</html>

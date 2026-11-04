@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Pruebas de checkboxes</title>
+<style>
+  body { font: 14px/1.4 system-ui, sans-serif; margin: 24px; color: #222; }
+  h2 { font-size: 15px; margin: 24px 0 6px; }
+  table { border-collapse: collapse; }
+  td, th { border: 1px solid #999; padding: 6px 12px; text-align: left; }
+  .col label { display: block; margin: 4px 0; }
+  #desplazado { position: relative; left: 60px; top: 30px; width: 300px; margin-bottom: 40px; }
+  #relleno { height: 1500px; }
+  iframe { width: 300px; height: 110px; border: 1px solid #333; }
+</style>
+<script>
+  window.log = { change: [], input: [], click: 0, contextmenu: 0, mousedown: 0, mouseup: 0, pointerdown: 0, mousemove: 0 };
+  document.addEventListener('change', (e) => { window.log.change.push(e.target.id); });
+  document.addEventListener('input', (e) => { window.log.input.push(e.target.id); });
+  document.addEventListener('contextmenu', () => { window.log.contextmenu++; });
+  window.state = () => Object.fromEntries([...document.querySelectorAll('input[type=checkbox]')].map((c) => [c.id, c.checked]));
+
+  // Manejadores en captura sobre window, registrados antes que cualquier otro script de la página.
+  window.hostileOn = false;
+  for (const type of ['mousedown', 'mouseup', 'pointerdown', 'mousemove']) {
+    window.addEventListener(type, (e) => {
+      if (!window.hostileOn) return;
+      window.log[type]++;
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }, true);
+  }
+</script>
+</head>
+<body>
+<h2>Grupo A</h2>
+<div class="col" id="grupo-a">
+  <label><input type="checkbox" id="a1"> A1</label>
+  <label><input type="checkbox" id="a2"> A2</label>
+  <label><input type="checkbox" id="a3" checked> A3 (marcada)</label>
+  <label><input type="checkbox" id="a4"> A4</label>
+  <label><input type="checkbox" id="a5"> A5</label>
+</div>
+
+<h2>Estados no alternables</h2>
+<form id="formulario">
+  <div class="col">
+    <label><input type="checkbox" name="activa" value="1" id="b-activa"> Activa</label>
+    <label><input type="checkbox" id="b-disabled" disabled> Desactivada</label>
+    <label><input type="checkbox" id="b-oculta" style="display:none"> Oculta con display</label>
+    <label><input type="checkbox" id="b-invisible" style="visibility:hidden"> Oculta con visibility</label>
+    <fieldset disabled><label><input type="checkbox" id="b-fieldset"> En fieldset desactivado</label></fieldset>
+    <label><input type="checkbox" name="final" value="1" id="b-final"> Última</label>
+  </div>
+</form>
+
+<h2>Dentro de una tabla</h2>
+<table id="tabla"><tbody>
+  <tr><td><input type="checkbox" id="c1"></td><td>Fila 1</td><td>10</td></tr>
+  <tr><td><input type="checkbox" id="c2"></td><td>Fila 2</td><td>20</td></tr>
+  <tr><td><input type="checkbox" id="c3"></td><td>Fila 3</td><td>30</td></tr>
+</tbody></table>
+
+<h2>Con manejadores de la página</h2>
+<div class="col">
+  <label><input type="checkbox" id="d-rechaza" onclick="return false"> La página rechaza el cambio</label>
+  <label><input type="checkbox" id="d-normal"> Normal</label>
+</div>
+
+<h2>Contenedor desplazado</h2>
+<div id="desplazado" class="col">
+  <label><input type="checkbox" id="e1"> E1</label>
+  <label><input type="checkbox" id="e2"> E2</label>
+</div>
+
+<h2>iframe</h2>
+<iframe id="marco" srcdoc="<!doctype html><label><input type='checkbox' id='f1'> F1</label><br><label><input type='checkbox' id='f2'> F2</label>"></iframe>
+
+<h2>Texto</h2>
+<p id="parrafo">Texto normal de la página.</p>
+
+<div id="relleno"></div>
+<p><label><input type="checkbox" id="z1"> Z1 al final de la página</label></p>
+<p><label><input type="checkbox" id="z2"> Z2 al final de la página</label></p>
+</body>
+</html>

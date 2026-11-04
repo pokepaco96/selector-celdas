@@ -1,0 +1,52 @@
+/* Si cambias estas reglas, actualiza también SHADOW_CSS en content.js. */
+
+/* Celdas seleccionadas */
+td[data-cellsel],
+th[data-cellsel] {
+  background-color: rgba(66, 133, 244, 0.3) !important;
+  background-image: none !important;
+  box-shadow: inset 0 0 0 1px rgba(26, 86, 196, 0.55) !important;
+}
+
+/* El fondo opaco de un elemento interno no debe ocultar el resaltado */
+td[data-cellsel] *,
+th[data-cellsel] * {
+  background-color: transparent !important;
+}
+
+/* Celda inicial: borde azul. Celda final: borde naranja. */
+td[data-cellsel~="start"],
+th[data-cellsel~="start"] {
+  box-shadow: inset 0 0 0 2px #1a56c4 !important;
+}
+
+td[data-cellsel~="end"],
+th[data-cellsel~="end"] {
+  box-shadow: inset 0 0 0 2px #c2410c !important;
+}
+
+td[data-cellsel="start end"],
+th[data-cellsel="start end"] {
+  box-shadow: inset 0 0 0 2px #1a56c4 !important;
+}
+
+/* Caja de selección de checkboxes */
+#cellsel-checkbox-box {
+  position: fixed !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  border: 2px dashed rgba(0, 123, 255, 0.7) !important;
+  border-radius: 5px !important;
+  background-color: rgba(0, 123, 255, 0.2) !important;
+  pointer-events: none !important;
+  z-index: 2147483647 !important;
+  display: none;
+}
+
+/* Durante el arrastre */
+html[data-cellsel-drag],
+html[data-cellsel-drag] * {
+  cursor: cell !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}

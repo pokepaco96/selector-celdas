@@ -1,0 +1,20 @@
+# Dependencias y resultados de las pruebas
+node_modules/
+tests/resultados/
+test-results/
+playwright-report/
+
+# Otros paquetes y copias descomprimidas (el README remite al ZIP de instalación)
+*.zip
+!/selector-celdas-extension.zip
+/selector-celdas-extension/
+/manifest.json
+/content.js
+/content.css
+/checkboxes.js
+/icon.png
+
+# Herramientas locales
+.agents/
+.aider-desk/
+skills-lock.json

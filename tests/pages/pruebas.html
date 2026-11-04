@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Pruebas de Selector de celdas</title>
+<style>
+  body { font: 14px/1.4 system-ui, sans-serif; margin: 24px; color: #222; }
+  h2 { font-size: 15px; margin: 28px 0 6px; }
+  table { border-collapse: collapse; margin-bottom: 8px; }
+  td, th { border: 1px solid #999; padding: 6px 12px; text-align: left; }
+  th { background: #eee; }
+  #t5, #t5 * { -webkit-user-select: none; user-select: none; }
+  .fondo-opaco { background: #ffe9a8; padding: 2px; }
+  .icono::before { content: "★ "; }
+  #t8b td { pointer-events: none; }
+  #t8c { pointer-events: none; }
+  #scroller { height: 200px; width: 320px; overflow: auto; border: 1px solid #333; }
+  #sticky-wrap thead th { position: sticky; top: 0; }
+  iframe { width: 340px; height: 130px; border: 1px solid #333; }
+</style>
+<script>
+  // Tabla 8: manejadores hostiles registrados en captura sobre window, antes que
+  // cualquier otro script de la página, para intentar impedir la selección.
+  window.hostile = { mousedown: 0, mouseup: 0, pointerdown: 0, mousemove: 0, selectstart: 0, dragstart: 0, click: 0, copyBlocked: 0, keyBlocked: 0 };
+  window.hostileCopy = false;
+  for (const type of ['mousedown', 'mouseup', 'pointerdown', 'mousemove', 'selectstart', 'dragstart', 'click']) {
+    window.addEventListener(type, (e) => {
+      if (!(e.target instanceof Element) || !e.target.closest('#t8')) return;
+      window.hostile[type]++;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (type === 'pointerdown') e.target.setPointerCapture?.(e.pointerId);
+    }, true);
+  }
+  window.addEventListener('copy', (e) => {
+    if (!window.hostileCopy) return;
+    window.hostile.copyBlocked++;
+    e.clipboardData.setData('text/plain', 'BLOQUEADO');
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }, true);
+  window.addEventListener('keydown', (e) => {
+    if (!window.hostileCopy || !(e.ctrlKey && e.key === 'c')) return;
+    window.hostile.keyBlocked++;
+    e.stopImmediatePropagation();
+  }, true);
+
+  // Contadores de actividad normal de la página.
+  window.pageLog = { clicks: 0, mousedowns: 0, escapes: 0, linkClicks: 0 };
+  document.addEventListener('click', (e) => {
+    window.pageLog.clicks++;
+    if (e.target.closest?.('a')) window.pageLog.linkClicks++;
+  });
+  document.addEventListener('mousedown', () => { window.pageLog.mousedowns++; });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') window.pageLog.escapes++; });
+</script>
+</head>
+<body>
+<h1>Pruebas de Selector de celdas</h1>
+
+<h2>1. Una sola columna</h2>
+<table id="t1"><tbody>
+  <tr><td>Manzana</td></tr><tr><td>Pera</td></tr><tr><td>Uva</td></tr><tr><td>Kiwi</td></tr><tr><td>Mango</td></tr>
+</tbody></table>
+
+<h2>2. Dos columnas</h2>
+<table id="t2">
+  <thead><tr><th>Nombre</th><th>Ciudad</th></tr></thead>
+  <tbody>
+    <tr><td>Ana</td><td>Madrid</td></tr>
+    <tr><td>Luis</td><td>Sevilla</td></tr>
+    <tr><td>Marta</td><td>Bilbao</td></tr>
+    <tr><td>Pablo</td><td>Cádiz</td></tr>
+  </tbody>
+</table>
+
+<h2>3. Diez filas con enlaces</h2>
+<table id="t3"><tbody id="t3-body"></tbody></table>
+<script>
+  for (let i = 1; i <= 10; i++) {
+    const code = 'R' + String(i).padStart(2, '0');
+    document.getElementById('t3-body').insertAdjacentHTML('beforeend',
+      `<tr><td>${code}</td><td><a href="/otra.html?n=${i}" id="link-${i}">Enlace ${i}</a></td><td>${i * 10}</td></tr>`);
+  }
+</script>
+
+<h2>4. Enlaces y texto anidado</h2>
+<table id="t4"><tbody>
+  <tr>
+    <td><a href="/otra.html?doc=1"><span class="icono"></span><span>Informe</span> <em>anual</em></a></td>
+    <td><div class="fondo-opaco"><strong>Total:</strong> <span>1.234,50&nbsp;€</span><span style="display:none">OCULTO</span></div></td>
+    <td><img alt="decoración" width="16" height="16" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"> <span>   con imagen   </span></td>
+  </tr>
+  <tr>
+    <td><a href="/otra.html?doc=2"><b>Memoria</b></a></td>
+    <td>Línea uno<br>Línea dos</td>
+    <td><ul style="margin:0"><li>Uno</li><li>Dos</li></ul></td>
+  </tr>
+  <tr>
+    <td>Tom &amp; Jerry &lt;b&gt;</td>
+    <td>"entre comillas"</td>
+    <td></td>
+  </tr>
+</tbody></table>
+
+<h2>5. user-select: none</h2>
+<table id="t5"><tbody>
+  <tr><td>No</td><td>seleccionable</td></tr>
+  <tr><td>Texto</td><td>protegido</td></tr>
+  <tr><td>Tercera</td><td>fila</td></tr>
+</tbody></table>
+
+<h2>6. rowspan y colspan</h2>
+<table id="t6">
+  <thead><tr><th>H1</th><th>H2</th><th>H3</th></tr></thead>
+  <tbody>
+    <tr><td rowspan="2">A</td><td>B</td><td>C</td></tr>
+    <tr><td>D</td><td>E</td></tr>
+    <tr><td colspan="2">F</td><td>G</td></tr>
+    <tr><td>H</td><td>I</td><td>J</td></tr>
+  </tbody>
+</table>
+
+<h2>7. Tabla dinámica</h2>
+<div id="t7-wrap"></div>
+<script>
+  window.dyn = {
+    values: ['Uno', 'Dos', 'Tres', 'Cuatro'],
+    ticks: 0,
+    html() {
+      return `<table id="t7"><tbody>${this.values.map((v, i) =>
+        `<tr><td class="k">${v}</td><td class="v" id="v${i}">${this.ticks}</td></tr>`).join('')}</tbody></table>`;
+    },
+    replaceTable() { document.getElementById('t7-wrap').innerHTML = this.html(); },
+    rerenderBody() {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = this.html();
+      document.querySelector('#t7 tbody').replaceWith(tmp.querySelector('tbody'));
+    },
+    setValue(i, v) { this.values[i] = v; document.querySelectorAll('#t7 .k')[i].textContent = v; },
+    start() { this.timer = setInterval(() => {
+      this.ticks++;
+      document.querySelectorAll('#t7 .v').forEach((td) => { td.textContent = this.ticks; });
+    }, 100); },
+    stop() { clearInterval(this.timer); },
+  };
+  window.dyn.replaceTable();
+</script>
+
+<h2>8. Tabla hostil (eventos que impiden la selección)</h2>
+<table id="t8" oncontextmenu="return false"><tbody>
+  <tr draggable="true"><td>H-1</td><td><a href="/otra.html?h=1" draggable="true">H-2</a></td></tr>
+  <tr draggable="true"><td>H-3</td><td>H-4</td></tr>
+  <tr draggable="true"><td>H-5</td><td>H-6</td></tr>
+</tbody></table>
+
+<h2>8b. pointer-events: none en las celdas</h2>
+<table id="t8b"><tbody>
+  <tr><td>PE-1</td><td>PE-2</td></tr>
+  <tr><td>PE-3</td><td>PE-4</td></tr>
+  <tr><td>PE-5</td><td>PE-6</td></tr>
+</tbody></table>
+
+<h2>8c. pointer-events: none en la tabla</h2>
+<div id="t8c-wrap"><table id="t8c"><tbody>
+  <tr><td>TP-1</td><td>TP-2</td></tr>
+  <tr><td>TP-3</td><td>TP-4</td></tr>
+</tbody></table></div>
+
+<h2>9. Formularios dentro de la tabla</h2>
+<table id="t9"><tbody>
+  <tr><td><input id="cell-input" value="dentro"></td><td>F-1</td></tr>
+  <tr><td><button id="cell-button">Botón</button></td><td>F-2</td></tr>
+  <tr><td contenteditable="true" id="cell-editable">editable</td><td>F-3</td></tr>
+</tbody></table>
+
+<h2>10. Tablas anidadas</h2>
+<table id="t10"><tbody>
+  <tr><td>Ext-1</td><td>Ext-2</td></tr>
+  <tr><td>Ext-3</td><td>
+    <table id="t10-inner"><tbody>
+      <tr><td>Int-1</td><td>Int-2</td></tr>
+      <tr><td>Int-3</td><td>Int-4</td></tr>
+    </tbody></table>
+  </td></tr>
+  <tr><td>Ext-5</td><td>Ext-6</td></tr>
+</tbody></table>
+
+<h2>11. Filas y columnas ocultas</h2>
+<table id="t11"><tbody>
+  <tr><td>V-1</td><td style="display:none">OCULTA</td><td>V-2</td></tr>
+  <tr style="display:none"><td>OCULTA</td><td>OCULTA</td><td>OCULTA</td></tr>
+  <tr><td>V-3</td><td style="display:none">OCULTA</td><td>V-4</td></tr>
+</tbody></table>
+
+<h2>12. Shadow DOM</h2>
+<div id="shadow-host"></div>
+<script>
+  document.getElementById('shadow-host').attachShadow({ mode: 'open' }).innerHTML =
+    '<table id="ts"><tr><td>S-1</td><td>S-2</td></tr><tr><td>S-3</td><td>S-4</td></tr></table>';
+</script>
+
+<h2>13. iframe</h2>
+<iframe id="marco" srcdoc="<!doctype html><table id='tf' border='1'><tr><td>IF-1</td><td>IF-2</td></tr><tr><td>IF-3</td><td>IF-4</td></tr></table>"></iframe>
+
+<h2>14. Contenedor con desplazamiento</h2>
+<div id="scroller"><table id="t14"><tbody id="t14-body"></tbody></table></div>
+<script>
+  for (let i = 1; i <= 60; i++) {
+    document.getElementById('t14-body').insertAdjacentHTML('beforeend', `<tr><td>Fila ${i}</td><td>Valor ${i}</td></tr>`);
+  }
+</script>
+
+<h2>14b. Contenido que Excel puede interpretar</h2>
+<table id="t16"><tbody>
+  <tr><td>=1+1</td><td>+1+1</td><td>@SUMA(1)</td><td>-5</td><td>00123</td><td>1/2</td><td>1.234,50</td></tr>
+</tbody></table>
+
+<h2>15. Controles normales de la página</h2>
+<p id="parrafo">Texto normal fuera de las tablas para selección nativa.</p>
+<p><a id="enlace-normal" href="/otra.html?normal=1">Enlace normal</a></p>
+<p><input id="campo" value="contenido del campo" size="30"></p>
+<p><textarea id="area">texto del área</textarea></p>
+<div id="drop-log"></div>
+</body>
+</html>
